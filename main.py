@@ -6,6 +6,11 @@ from shuffling import shuffle
 from reduce import reducer
 from multiprocessing import Pool
 
+def trace_mapper_execution(line_offset, line):
+    process_id = os.getpid()
+    print(f"Process {process_id} is processing line offset {line_offset}.")
+    return mapper(line_offset, line)
+
 def main():
     # Input and output file paths
     input_file = 'input_file.txt' 
@@ -30,8 +35,9 @@ def main():
     # Configure the number of processes in the pool based on the number of chunks
     num_processes = 4 if len(chunks) <= 8 else 8
     print(f"Using {num_processes} cores for mapping.")
+
     with Pool(processes=num_processes) as pool:
-        mapper_outputs = pool.starmap(mapper, mapper_inputs)
+        mapper_outputs = pool.starmap(trace_mapper_execution, mapper_inputs)
     sample_mapper_output = mapper_outputs[0][:5] if mapper_outputs else []
     print(f"Mapping Details:\nSample Key-Value Pairs: {sample_mapper_output}\nMapping completed in {time.time() - start_time:.2f} seconds.")
 
