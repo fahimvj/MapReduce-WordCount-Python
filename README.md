@@ -53,3 +53,5 @@ This Python program implements a MapReduce-based solution to count word frequenc
 2. Run the `main.py` script using Python:
    ```bash
    python main.py
+
+![Alt text](https://github.com/fahimvj/MapReduce-WordCount-Python/blob/main/snapshot%20word%20count.png)
