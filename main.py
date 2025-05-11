@@ -6,9 +6,9 @@ from shuffling import shuffle
 from reduce import reducer
 from multiprocessing import Pool
 
-def trace_mapper_execution(line_offset, line):
+def trace_mapper_execution(chunk_name, line_offset, line):
     process_id = os.getpid()
-    print(f"Process {process_id} is processing line offset {line_offset}.")
+    print(f"Core {process_id} is processing chunk {chunk_name}.")
     return mapper(line_offset, line)
 
 def main():
@@ -30,7 +30,7 @@ def main():
     for chunk in chunks:
         with open(chunk, 'r', encoding='utf-8') as f:
             for line_offset, line in enumerate(f):
-                mapper_inputs.append((line_offset, line.strip()))
+                mapper_inputs.append((chunk, line_offset, line.strip()))
 
     # Configure the number of processes in the pool based on the number of chunks
     num_processes = 4 if len(chunks) <= 8 else 8
@@ -44,8 +44,7 @@ def main():
     # Shuffle stage
     start_time = time.time()
     shuffled_data = shuffle(mapper_outputs)
-    sample_shuffled_output = dict(list(shuffled_data.items())[:5])
-    print(f"Shuffling Details:\nSample Grouped Key-Value Pairs: {sample_shuffled_output}\nShuffling completed in {time.time() - start_time:.2f} seconds.")
+    print(f"Shuffling completed in {time.time() - start_time:.2f} seconds.")
 
     # Reduce stage
     start_time = time.time()
