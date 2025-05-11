@@ -21,8 +21,17 @@ def main():
 
     # Map stage
     start_time = time.time()
-    with Pool() as pool:
-        mapper_outputs = pool.map(mapper, chunks)
+    mapper_inputs = []
+    for chunk in chunks:
+        with open(chunk, 'r', encoding='utf-8') as f:
+            for line_offset, line in enumerate(f):
+                mapper_inputs.append((line_offset, line.strip()))
+
+    # Configure the number of processes in the pool based on the number of chunks
+    num_processes = 4 if len(chunks) <= 8 else 8
+    print(f"Using {num_processes} cores for mapping.")
+    with Pool(processes=num_processes) as pool:
+        mapper_outputs = pool.starmap(mapper, mapper_inputs)
     sample_mapper_output = mapper_outputs[0][:5] if mapper_outputs else []
     print(f"Mapping Details:\nSample Key-Value Pairs: {sample_mapper_output}\nMapping completed in {time.time() - start_time:.2f} seconds.")
 
