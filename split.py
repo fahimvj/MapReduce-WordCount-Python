@@ -34,3 +34,4 @@ def split_file(input_file, chunk_size=128 * 1024 * 1024, word_chunk_size=1000):
 if __name__ == '__main__':
     input_file = 'input_file.txt'
     split_file(input_file)
+    
