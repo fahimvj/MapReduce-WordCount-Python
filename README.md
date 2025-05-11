@@ -1,23 +1,15 @@
 # MapReduce Word Frequency Count
 
-## Lab Assignment
-
-### Submitted to:
-- **Course Title**: Big Data Analysis
-- **Course Code**: DAS603
-- **Course Teacher**: Linkon Chowdhury
-
-### Submitted by:
 - **Name**: MD Fahim Shahriar Chowdhury
-- **ID**: 243000561@eastdelta.edu.bd
+- **Contact**: fahimbcp@gmail.com
 - **Date**: 11 May 2025
 
 ---
 
-## Assignment Details
+##  Details
 Develop a MapReduce-based solution in Python to perform a word frequency count. Use the provided input file for your implementation. Submit both your Python code and the resulting output.
 
-### Given Input File:
+### Input File:
 - **File Name**: `input_file.txt`
 
 ---
