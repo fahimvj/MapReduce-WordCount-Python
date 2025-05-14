@@ -1,3 +1,4 @@
+# filepath: d:\EDU\MapReduce-WordCount-Python-main\split.py
 import os
 import math
 from multiprocessing import Pool
@@ -55,10 +56,12 @@ def split_file(input_file, chunk_size=128 * 1024 * 1024, word_chunk_size=1000):
                         with open(chunk_file, 'w', encoding='latin-1') as chunk:
                             chunk.write(' '.join(words[i * word_chunk_size:(i + 1) * word_chunk_size]))
                         chunks.append(chunk_file)
-
-    return chunks
+        
+        return chunks
+    except Exception as e:
+        print(f"Error in split_file: {e}")
+        return []
 
 if __name__ == '__main__':
     input_file = 'input_file.txt'
     split_file(input_file)
-    

@@ -1,0 +1,257 @@
+#!/usr/bin/env python3
+# filepath: d:\EDU\MapReduce-WordCount-Python-main\test_hadoop.py
+
+import sys
+import os
+import subprocess
+import tempfile
+
+def print_section(title):
+    """Print a section header"""
+    print("\n" + "="*80)
+    print(f" {title} ".center(80, "="))
+    print("="*80 + "\n")
+
+def use_input_file():
+    """Use the existing input_file.txt for Hadoop processing"""
+    print_section("USING EXISTING INPUT FILE")
+    
+    # Use the existing input file
+    input_path = os.path.join(os.getcwd(), "input_file.txt")
+    
+    if not os.path.exists(input_path):
+        print(f"Error: Input file not found at {input_path}")
+        print("Creating a sample input file for testing...")
+        with open(input_path, 'w', encoding='utf-8') as f:
+            f.write("""This is a test file for the MapReduce word count program.
+            It contains various words that will be counted by our Hadoop MapReduce job.
+            Some words appear multiple times to test the counting functionality.
+            The Hadoop framework should handle this file efficiently.
+            Words like test, file, and count should have higher frequencies.""")
+    
+    actual_size = os.path.getsize(input_path) / 1024
+    print(f"Using input file: {input_path}")
+    print(f"File size: {actual_size:.2f} KB")
+    
+    return input_path
+
+def test_mapper():
+    """Test the Hadoop mapper locally"""
+    print_section("TESTING MAPPER")
+    
+    # Create a small test input
+    test_input = """Hello world
+    This is a test
+    Hello again, world"""
+    
+    # Run the mapper script
+    print("Input to mapper:")
+    print(test_input)
+    print("\nOutput from mapper:")
+    
+    # Use subprocess to pipe the test input to the mapper script
+    mapper_path = os.path.join(os.getcwd(), "hadoop_mapper.py")
+    if not os.path.exists(mapper_path):
+        print(f"Error: Mapper script not found at {mapper_path}")
+        return False
+    
+    try:
+        process = subprocess.run(
+            ["python", mapper_path],
+            input=test_input,
+            text=True,
+            capture_output=True
+        )
+        print(process.stdout)
+        if process.returncode != 0:
+            print(f"Mapper test failed with exit code {process.returncode}")
+            print(f"Error: {process.stderr}")
+            return False
+    except Exception as e:
+        print(f"Error running mapper: {e}")
+        return False
+    
+    return True
+
+def test_reducer():
+    """Test the Hadoop reducer locally"""
+    print_section("TESTING REDUCER")
+    
+    # Create a sample mapper output (already sorted as it would be by Hadoop)
+    test_input = """hello\t1
+    hello\t1
+    test\t1
+    world\t1
+    world\t1"""
+    
+    # Run the reducer script
+    print("Input to reducer (sorted mapper output):")
+    print(test_input)
+    print("\nOutput from reducer:")
+    
+    # Use subprocess to pipe the test input to the reducer script
+    reducer_path = os.path.join(os.getcwd(), "hadoop_reducer.py")
+    if not os.path.exists(reducer_path):
+        print(f"Error: Reducer script not found at {reducer_path}")
+        return False
+    
+    try:
+        process = subprocess.run(
+            ["python", reducer_path],
+            input=test_input,
+            text=True,
+            capture_output=True
+        )
+        print(process.stdout)
+        if process.returncode != 0:
+            print(f"Reducer test failed with exit code {process.returncode}")
+            print(f"Error: {process.stderr}")
+            return False
+    except Exception as e:
+        print(f"Error running reducer: {e}")
+        return False
+    
+    return True
+
+def test_local_hadoop_pipeline():
+    """Simulate a Hadoop job locally"""
+    print_section("SIMULATING HADOOP PIPELINE")
+    
+    # Use the existing input file
+    input_path = os.path.join(os.getcwd(), "input_file.txt")
+    
+    try:
+        with open(input_path, 'r', encoding='utf-8') as f:
+            # Just read first few lines for display purposes
+            sample_lines = ''.join([next(f) for _ in range(4)])
+        
+        print(f"Using input file: {input_path}")
+        print("Sample of input file content:")
+        print(sample_lines + "...\n")
+        
+        # Read the full file for processing
+        with open(input_path, 'r', encoding='utf-8') as f:
+            test_input = f.read()
+    
+    except FileNotFoundError:
+        print(f"Warning: Input file not found at {input_path}, using sample text instead")
+        # Fallback to sample text
+        test_input = """Hello world MapReduce
+        This is a test of the MapReduce framework
+        Hello again, MapReduce world
+        Testing and testing again"""
+        print("Test input (sample):")
+        print(test_input)
+    
+    mapper_path = os.path.join(os.getcwd(), "hadoop_mapper.py")
+    reducer_path = os.path.join(os.getcwd(), "hadoop_reducer.py")
+    
+    try:        # Run mapper
+        print("\nRunning mapper...")
+        mapper_process = subprocess.run(
+            ["python", mapper_path],
+            input=test_input,
+            text=True,
+            capture_output=True
+        )
+        
+        if mapper_process.returncode != 0:
+            print(f"Mapper failed: {mapper_process.stderr}")
+            return False
+        
+        mapper_output = mapper_process.stdout        print("\nMapper output (first 10 lines):")
+        mapper_output_lines = mapper_output.strip().split('\n')
+        for line in mapper_output_lines[:10]:
+            print(line)
+        if len(mapper_output_lines) > 10:
+            print(f"... and {len(mapper_output_lines) - 10} more lines")
+        
+        # Sort the mapper output (simulating Hadoop shuffle phase)
+        print("\nSorting mapper output (shuffle phase)...")
+        sorted_lines = sorted(mapper_output.strip().split('\n'))
+        sorted_output = '\n'.join(sorted_lines)
+        print("\nSorted output (first 10 lines):")
+        sorted_output_lines = sorted_output.strip().split('\n')
+        for line in sorted_output_lines[:10]:
+            print(line)
+        if len(sorted_output_lines) > 10:
+            print(f"... and {len(sorted_output_lines) - 10} more lines")
+        
+        # Run reducer
+        print("\nRunning reducer...")
+        reducer_process = subprocess.run(
+            ["python", reducer_path],
+            input=sorted_output,
+            text=True,
+            capture_output=True
+        )
+        
+        if reducer_process.returncode != 0:
+            print(f"Reducer failed: {reducer_process.stderr}")
+            return False
+        
+        # Save the output to output_file_hadoop.txt
+        hadoop_output_file = "output_file_hadoop.txt"
+        with open(hadoop_output_file, 'w', encoding='utf-8') as f:
+            f.write(reducer_process.stdout)
+        
+        print(f"\nFinal output saved to {hadoop_output_file}")
+        print("First 20 word counts:")
+        reducer_output_lines = reducer_process.stdout.strip().split('\n')
+        for line in reducer_output_lines[:20]:
+            print(line)
+        if len(reducer_output_lines) > 20:
+            print(f"... and {len(reducer_output_lines) - 20} more words")
+        
+        return True
+    
+    except Exception as e:
+        print(f"Error in local Hadoop pipeline test: {e}")
+        return False
+
+def main():
+    """Run all tests"""
+    print_section("HADOOP MAPREDUCE TESTING SUITE")
+    
+    # Confirm we're using the existing input file
+    input_path = os.path.join(os.getcwd(), "input_file.txt")
+    if os.path.exists(input_path):
+        file_size = os.path.getsize(input_path) / 1024
+        print(f"Using existing input file: {input_path}")
+        print(f"Input file size: {file_size:.2f} KB\n")
+    else:
+        print("Warning: input_file.txt not found. Will use sample text for tests.\n")
+    
+    passed = 0
+    total = 3
+      # Test 1: Mapper test
+    if test_mapper():
+        print("\n[PASS] Mapper test PASSED")
+        passed += 1
+    else:
+        print("\n[FAIL] Mapper test FAILED")
+    
+    # Test 2: Reducer test
+    if test_reducer():
+        print("\n[PASS] Reducer test PASSED")
+        passed += 1
+    else:
+        print("\n[FAIL] Reducer test FAILED")
+    
+    # Test 3: Local pipeline test
+    if test_local_hadoop_pipeline():
+        print("\n[PASS] Local Hadoop pipeline test PASSED")
+        passed += 1
+    else:
+        print("\n[FAIL] Local Hadoop pipeline test FAILED")
+    
+    print_section(f"TEST RESULTS: {passed}/{total} TESTS PASSED")
+    
+    print("\nTo run on a real Hadoop cluster:")
+    print("1. Upload input file to HDFS: hdfs dfs -put input_file.txt /user/hadoop/input/")
+    print("2. Run the Hadoop job:")
+    print("   - Linux/macOS: ./run_hadoop.sh /user/hadoop/input/input_file.txt /user/hadoop/output/")
+    print("   - Windows PowerShell: ./Run-HadoopJob.ps1 -InputFile \"/user/hadoop/input/input_file.txt\" -OutputDir \"/user/hadoop/output/\"")
+
+if __name__ == "__main__":
+    main()
