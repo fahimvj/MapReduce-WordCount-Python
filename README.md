@@ -228,8 +228,8 @@ The implementation includes robust error handling and optimizations:
 ## Performance Snapshot
 
 ![Word Count MapReduce Performance](https://github.com/fahimvj/MapReduce-WordCount-Python/blob/main/snapshot%20word%20count.png)
+![Word Count MapReduce Performance](https://github.com/fahimvj/MapReduce-WordCount-Python/blob/main/test_hadoop.py%20output.png)
 
-![Word Count MapReduce Performance Hadoop]([https://github.com/fahimvj/MapReduce-WordCount-Python/blob/main/snapshot%20word%20count.png](https://github.com/fahimvj/MapReduce-WordCount-Python/blob/main/main.py%20output.png))
 
 
 
